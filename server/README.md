@@ -28,3 +28,14 @@ Things you may want to cover:
 
 `rake db:create`
 
+If rake generate takes long, generated stubs are the problem
+
+`rm -rf bin/ && rake app:update:bin`
+
+
+add bcrypt gem to gemfile and bundle install
+
+`rails generate model user moniker:string  password:digest`
+`rake db:migrate`
+
+

@@ -1,114 +1,92 @@
-/**
- * Sample React Native App
- * https://github.com/facebook/react-native
- *
- * @format
- * @flow strict-local
- */
+import React, {Component} from 'react';
+import {Alert, StyleSheet, View, SafeAreaView} from 'react-native';
+import {StreamChat} from 'stream-chat';
+import Auth from './Auth';
+import Chat from './Chat';
+import axios from 'axios';
 
-import React from 'react';
-import {
-  SafeAreaView,
-  StyleSheet,
-  ScrollView,
-  View,
-  Text,
-  StatusBar,
-} from 'react-native';
+export default class App extends Component {
+  constructor(props) {
+    super(props);
 
-import {
-  Header,
-  LearnMoreLinks,
-  Colors,
-  DebugInstructions,
-  ReloadInstructions,
-} from 'react-native/Libraries/NewAppScreen';
+    this.state = {
+      isAuthenticated: false,
+      id: '',
+    };
 
-const App: () => React$Node = () => {
-  return (
-    <>
-      <StatusBar barStyle="dark-content" />
-      <SafeAreaView>
-        <ScrollView
-          contentInsetAdjustmentBehavior="automatic"
-          style={styles.scrollView}>
-          <Header />
-          {global.HermesInternal == null ? null : (
-            <View style={styles.engine}>
-              <Text style={styles.footer}>Engine: Hermes</Text>
+    this.chatClient = new StreamChat('u8x26aqytmec');
+  }
+
+  onLoginCallBack = user => {
+    if (user.moniker.length === 0) {
+      Alert.alert('Login', 'Please provide your moniker');
+      return;
+    }
+
+    if (user.password.length === 0) {
+      Alert.alert('Login', 'Please provide your password');
+      return;
+    }
+
+    const data = {
+      user: {
+        ...user,
+      },
+    };
+
+    axios
+      .post('http://localhost:3000/users/', data, {
+        headers: {Authorization: 'ieueojdkdj39fkddd'},
+      })
+      .then(res => {
+        console.log(res.data);
+
+        if (res.data.token === '') {
+          Alert.alert('Login', 'Error occurred while authenticating you');
+          return;
+        }
+
+        this.chatClient.setUser(
+          {
+            id: res.data.user.moniker,
+            username: res.data.user.moniker,
+            image:
+              'https://stepupandlive.files.wordpress.com/2014/09/3d-animated-frog-image.jpg',
+          },
+          res.data.token
+        );
+        this.setState({
+          isAuthenticated: true,
+          id: res.data.user._id,
+        });
+      })
+      .catch(err => {
+        console.log(err);
+        Alert.alert('Login', 'Could not log you in');
+      });
+  };
+
+  render() {
+    return (
+      <SafeAreaView style={{flex: 1}}>
+        <View style={{flex: 1}}>
+          {!this.state.isAuthenticated || this.state.currentUser === null ? (
+            <View style={styles.container}>
+              <Auth cb={this.onLoginCallBack} />
+            </View>
+          ) : (
+            <View style={[{flex: 1}]}>
+              <Chat userID={this.state.id} chatClient={this.chatClient} />
             </View>
           )}
-          <View style={styles.body}>
-            <View style={styles.sectionContainer}>
-              <Text style={styles.sectionTitle}>Step One</Text>
-              <Text style={styles.sectionDescription}>
-                Edit <Text style={styles.highlight}>App.js</Text> to change this
-                screen and then come back to see your edits.
-              </Text>
-            </View>
-            <View style={styles.sectionContainer}>
-              <Text style={styles.sectionTitle}>See Your Changes</Text>
-              <Text style={styles.sectionDescription}>
-                <ReloadInstructions />
-              </Text>
-            </View>
-            <View style={styles.sectionContainer}>
-              <Text style={styles.sectionTitle}>Debug</Text>
-              <Text style={styles.sectionDescription}>
-                <DebugInstructions />
-              </Text>
-            </View>
-            <View style={styles.sectionContainer}>
-              <Text style={styles.sectionTitle}>Learn More</Text>
-              <Text style={styles.sectionDescription}>
-                Read the docs to discover what to do next:
-              </Text>
-            </View>
-            <LearnMoreLinks />
-          </View>
-        </ScrollView>
+        </View>
       </SafeAreaView>
-    </>
-  );
-};
+    );
+  }
+}
 
 const styles = StyleSheet.create({
-  scrollView: {
-    backgroundColor: Colors.lighter,
-  },
-  engine: {
-    position: 'absolute',
-    right: 0,
-  },
-  body: {
-    backgroundColor: Colors.white,
-  },
-  sectionContainer: {
-    marginTop: 32,
-    paddingHorizontal: 24,
-  },
-  sectionTitle: {
-    fontSize: 24,
-    fontWeight: '600',
-    color: Colors.black,
-  },
-  sectionDescription: {
-    marginTop: 8,
-    fontSize: 18,
-    fontWeight: '400',
-    color: Colors.dark,
-  },
-  highlight: {
-    fontWeight: '700',
-  },
-  footer: {
-    color: Colors.dark,
-    fontSize: 12,
-    fontWeight: '600',
-    padding: 4,
-    paddingRight: 12,
-    textAlign: 'right',
+  container: {
+    flex: 1,
   },
 });
-
-export default App;

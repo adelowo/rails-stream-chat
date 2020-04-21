@@ -15,7 +15,7 @@ export default class Auth extends Component {
     return (
       <View style={styles.container}>
         <TextInput
-          value={this.state.username}
+          value={this.state.moniker}
           onChangeText={moniker => this.setState({moniker: moniker.trim()})}
           placeholder={'Moniker'}
           style={styles.input}

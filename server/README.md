@@ -38,4 +38,3 @@ add bcrypt gem to gemfile and bundle install
 `rails generate model user moniker:string  password:digest`
 `rake db:migrate`
 
-
